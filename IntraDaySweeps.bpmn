@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:tns="http://www.activiti.org/test" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:yaoqiang="http://bpmn.sourceforge.net" exporter="Yaoqiang BPMN Editor" exporterVersion="5.3" expressionLanguage="http://www.w3.org/1999/XPath" id="_1630078341246" name="" targetNamespace="http://www.activiti.org/test" typeLanguage="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://bpmn.sourceforge.net/schemas/BPMN20.xsd">
+  <process id="IntraDaySweeps" isClosed="false" isExecutable="true" name="IntraDaySweeps" processType="None">
+    <documentation id="IntraDaySweeps_D_1" textFormat="text/plain">
+      <![CDATA[
+      ]]>
+    </documentation>
+    <extensionElements>
+      <yaoqiang:description/>
+      <yaoqiang:pageFormat height="841.8897637795276" imageableHeight="831.8897637795276" imageableWidth="588.1102362204724" imageableX="5.0" imageableY="5.0" orientation="0" width="598.1102362204724"/>
+      <yaoqiang:page background="#FFFFFF" horizontalCount="1" verticalCount="1"/>
+    </extensionElements>
+    <startEvent id="StartIntradaySweeps" isInterrupting="true" name="StartIntradaySweeps" parallelMultiple="false">
+      <outgoing>flow1</outgoing>
+      <outputSet/>
+    </startEvent>
+    <serviceTask activiti:expression="${eligibleStructureProcessor.prepareSweepTree(IntraDayTime,execution)}" activiti:resultVariableName="proceed" completionQuantity="1" id="EligibleStructures" implementation="##WebService" isForCompensation="false" name="EligibleStructures" startQuantity="1">
+      <incoming>flow1</incoming>
+      <outgoing>flow7</outgoing>
+    </serviceTask>
+    <sequenceFlow id="flow1" sourceRef="StartIntradaySweeps" targetRef="EligibleStructures"/>
+    <endEvent id="endevent1" name="End">
+      <incoming>flow8</incoming>
+      <inputSet/>
+    </endEvent>
+    <serviceTask activiti:async="true" activiti:expression="${groupProcessCreation.loadProcesses(IntraDayTime)}" completionQuantity="1" id="GroupProcessCreation" implementation="##WebService" isForCompensation="false" name="GroupProcessCreation" startQuantity="1">
+      <incoming>EligibleStructureExists</incoming>
+      <outgoing>flow5</outgoing>
+    </serviceTask>
+    <receiveTask activiti:async="true" completionQuantity="1" id="WaitForSweepCompletion" implementation="##WebService" instantiate="false" isForCompensation="false" name="WaitForSweepCompletion" startQuantity="1">
+      <incoming>flow6</incoming>
+      <outgoing>flow4</outgoing>
+    </receiveTask>
+    <sequenceFlow id="flow4" sourceRef="WaitForSweepCompletion" targetRef="IntraDayPostProcess"/>
+    <serviceTask activiti:async="true" activiti:expression="${triggerDependentGroup.trigger(null,IntraDayTime)}" completionQuantity="1" id="TriggerNonDependentGroups" implementation="##WebService" isForCompensation="false" name="TriggerNonDependentGroups" startQuantity="1">
+      <incoming>flow5</incoming>
+      <outgoing>flow6</outgoing>
+    </serviceTask>
+    <sequenceFlow id="flow5" sourceRef="GroupProcessCreation" targetRef="TriggerNonDependentGroups"/>
+    <sequenceFlow id="flow6" sourceRef="TriggerNonDependentGroups" targetRef="WaitForSweepCompletion"/>
+    <exclusiveGateway gatewayDirection="Unspecified" id="EligibleSweepsExists" name="EligibleSweepsExists">
+      <incoming>flow7</incoming>
+      <outgoing>EligibleStructureExists</outgoing>
+      <outgoing>EligibleStructureNotExists</outgoing>
+    </exclusiveGateway>
+    <sequenceFlow id="flow7" sourceRef="EligibleStructures" targetRef="EligibleSweepsExists"/>
+    <sequenceFlow id="EligibleStructureExists" name="EligibleStructureExists" sourceRef="EligibleSweepsExists" targetRef="GroupProcessCreation">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[
+        ]]>
+      </conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="EligibleStructureNotExists" name="EligibleStructureNotExists" sourceRef="EligibleSweepsExists" targetRef="IntraDayPostProcess">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[
+        ]]>
+      </conditionExpression>
+    </sequenceFlow>
+    <serviceTask activiti:async="true" activiti:expression="${intraDayPostProcess.handle(IntraDayTime)}" completionQuantity="1" id="IntraDayPostProcess" implementation="##WebService" isForCompensation="false" name="IntraDayPostProcess" startQuantity="1">
+      <incoming>flow4</incoming>
+      <incoming>EligibleStructureNotExists</incoming>
+      <outgoing>flow8</outgoing>
+    </serviceTask>
+    <sequenceFlow id="flow8" sourceRef="IntraDayPostProcess" targetRef="endevent1"/>
+  </process>
+  <bpmndi:BPMNDiagram id="Yaoqiang_Diagram-IntraDaySweeps" name="Untitled Diagram" resolution="96.0">
+    <bpmndi:BPMNPlane bpmnElement="IntraDaySweeps">
+      <bpmndi:BPMNShape bpmnElement="StartIntradaySweeps" id="Yaoqiang-StartIntradaySweeps">
+        <omgdc:Bounds height="32.0" width="32.0" x="1.0" y="193.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="114.0" x="-40.0" y="233.52"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="EligibleStructures" id="Yaoqiang-EligibleStructures">
+        <omgdc:Bounds height="81.0" width="141.0" x="140.0" y="170.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="100.0" x="160.5" y="203.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="Yaoqiang-endevent1">
+        <omgdc:Bounds height="32.0" width="32.0" x="549.0" y="360.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="26.0" x="552.0" y="400.52"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="GroupProcessCreation" id="Yaoqiang-GroupProcessCreation">
+        <omgdc:Bounds height="111.0" width="145.0" x="485.0" y="30.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="128.0" x="493.5" y="78.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="WaitForSweepCompletion" id="Yaoqiang-WaitForSweepCompletion">
+        <omgdc:Bounds height="88.0" width="115.0" x="735.0" y="203.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="32.96" width="104.0" x="740.5" y="232.52"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="TriggerNonDependentGroups" id="Yaoqiang-TriggerNonDependentGroups">
+        <omgdc:Bounds height="111.0" width="145.0" x="720.0" y="30.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="32.96" width="126.0" x="729.5" y="71.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="EligibleSweepsExists" id="Yaoqiang-EligibleSweepsExists" isMarkerVisible="true">
+        <omgdc:Bounds height="42.0" width="42.0" x="350.0" y="190.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="115.0" x="313.5" y="234.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="IntraDayPostProcess" id="Yaoqiang-IntraDayPostProcess">
+        <omgdc:Bounds height="99.0" width="127.0" x="503.0" y="197.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="32.96" width="110.0" x="511.5" y="232.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="EligibleStructureExists" id="Yaoqiang-EligibleStructureExists">
+        <omgdi:waypoint x="370.0" y="191.0"/>
+        <omgdi:waypoint x="370.0" y="85.0"/>
+        <omgdi:waypoint x="485.0" y="85.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="126.0" x="311.5" y="75.52"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow8" id="Yaoqiang-flow8">
+        <omgdi:waypoint x="565.0" y="296.0"/>
+        <omgdi:waypoint x="565.0" y="360.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="562.0" y="318.52"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow7" id="Yaoqiang-flow7">
+        <omgdi:waypoint x="281.0" y="210.5"/>
+        <omgdi:waypoint x="350.0" y="211.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="312.5" y="201.27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow6" id="Yaoqiang-flow6">
+        <omgdi:waypoint x="792.5" y="141.0"/>
+        <omgdi:waypoint x="792.5" y="203.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="789.5" y="162.52"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow5" id="Yaoqiang-flow5">
+        <omgdi:waypoint x="630.0" y="85.5"/>
+        <omgdi:waypoint x="720.0" y="85.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="672.0" y="76.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="Yaoqiang-flow4">
+        <omgdi:waypoint x="735.0" y="247.0"/>
+        <omgdi:waypoint x="630.0" y="246.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="679.5" y="237.27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="Yaoqiang-flow1">
+        <omgdi:waypoint x="33.0" y="209.0"/>
+        <omgdi:waypoint x="140.0" y="210.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="83.5" y="200.27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="EligibleStructureNotExists" id="Yaoqiang-EligibleStructureNotExists">
+        <omgdi:waypoint x="370.0" y="231.0"/>
+        <omgdi:waypoint x="370.0" y="244.0"/>
+        <omgdi:waypoint x="503.0" y="244.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="145.0" x="357.5" y="234.52"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:tns="http://www.activiti.org/test" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:yaoqiang="http://bpmn.sourceforge.net" exporter="Yaoqiang BPMN Editor" exporterVersion="5.3" expressionLanguage="http://www.w3.org/1999/XPath" id="_1629807189699" name="" targetNamespace="http://www.activiti.org/test" typeLanguage="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://bpmn.sourceforge.net/schemas/BPMN20.xsd">
+  <signal id="startOnDependency" name="startOnDependency"/>
+  <process id="IntraDayGroups" isClosed="false" isExecutable="true" name="IntraDayGroups" processType="None">
+    <extensionElements>
+      <yaoqiang:description/>
+      <yaoqiang:pageFormat height="841.8897637795276" imageableHeight="831.8897637795276" imageableWidth="588.1102362204724" imageableX="5.0" imageableY="5.0" orientation="0" width="598.1102362204724"/>
+      <yaoqiang:page background="#FFFFFF" horizontalCount="1" verticalCount="1"/>
+    </extensionElements>
+    <startEvent id="startOn" isInterrupting="true" name="startOn" parallelMultiple="false">
+      <outgoing>flow1</outgoing>
+      <outputSet/>
+      <signalEventDefinition id="startOn_ED_1" signalRef="startOnDependency"/>
+    </startEvent>
+    <serviceTask activiti:async="true" activiti:expression="${groupEligibilityCheck.check(group)}" completionQuantity="1" id="CheckDependency" implementation="##WebService" isForCompensation="false" name="CheckDependency" startQuantity="1">
+      <incoming>flow1</incoming>
+      <outgoing>flow2</outgoing>
+    </serviceTask>
+    <serviceTask activiti:async="true" activiti:expression="${balanceService.syncBalanceFetch(group)}" completionQuantity="1" id="BalanceFetch" implementation="##WebService" isForCompensation="false" name="BalanceFetch" startQuantity="1">
+      <incoming>flow2</incoming>
+      <outgoing>flow3</outgoing>
+    </serviceTask>
+    <sequenceFlow id="flow1" sourceRef="startOn" targetRef="CheckDependency"/>
+    <sequenceFlow id="flow2" sourceRef="CheckDependency" targetRef="BalanceFetch"/>
+    <serviceTask activiti:async="true" activiti:expression="${sweepComputeService.sweepUp(group)}" completionQuantity="1" id="SweepUp" implementation="##WebService" isForCompensation="false" name="SweepUp" startQuantity="1">
+      <incoming>flow3</incoming>
+      <outgoing>flow4</outgoing>
+    </serviceTask>
+    <serviceTask activiti:async="true" activiti:expression="${sweepPaymentService.sweepUpPayment(group)}" completionQuantity="1" id="sweepUpPayment" implementation="##WebService" isForCompensation="false" name="sweepUpPayment" startQuantity="1">
+      <incoming>flow4</incoming>
+      <outgoing>flow5</outgoing>
+    </serviceTask>
+    <receiveTask activiti:async="true" completionQuantity="1" id="sweepUpPaymentConfirmation" implementation="##WebService" instantiate="false" isForCompensation="false" name="sweepUpPaymentConfirmation" startQuantity="1">
+      <incoming>flow5</incoming>
+      <outgoing>flow6</outgoing>
+    </receiveTask>
+    <serviceTask activiti:async="true" activiti:expression="${sweepComputeService.sweepDown(group)}" completionQuantity="1" id="SweepDown" implementation="##WebService" isForCompensation="false" name="SweepDown" startQuantity="1">
+      <incoming>flow6</incoming>
+      <outgoing>flow7</outgoing>
+    </serviceTask>
+    <serviceTask activiti:async="true" activiti:expression="${sweepsweepPaymentService.sweepDownPayment(group)}" completionQuantity="1" id="sweepDownPayment" implementation="##WebService" isForCompensation="false" name="sweepDownPayment" startQuantity="1">
+      <incoming>flow7</incoming>
+      <outgoing>flow8</outgoing>
+    </serviceTask>
+    <receiveTask activiti:async="true" completionQuantity="1" id="SweepDownPaymentConfirmation" implementation="##WebService" instantiate="false" isForCompensation="false" name="SweepDownPaymentConfirmation" startQuantity="1">
+      <incoming>flow8</incoming>
+      <outgoing>flow9</outgoing>
+    </receiveTask>
+    <serviceTask activiti:async="true" activiti:expression="${sweepService.sweepStatusUpdate(group)}" completionQuantity="1" id="SweepStatusUpdate" implementation="##WebService" isForCompensation="false" name="SweepStatusUpdate" startQuantity="1">
+      <incoming>flow9</incoming>
+      <outgoing>flow10</outgoing>
+    </serviceTask>
+    <serviceTask activiti:async="true" activiti:expression="${sweepService.sweepPostProcessing(group)}" completionQuantity="1" id="SweepPostProcessing" implementation="##WebService" isForCompensation="false" name="SweepPostProcessing" startQuantity="1">
+      <incoming>flow10</incoming>
+      <outgoing>flow11</outgoing>
+    </serviceTask>
+    <endEvent id="groupCompleted" name="groupCompleted">
+      <incoming>flow11</incoming>
+      <inputSet/>
+    </endEvent>
+    <sequenceFlow id="flow3" sourceRef="BalanceFetch" targetRef="SweepUp"/>
+    <sequenceFlow id="flow4" sourceRef="SweepUp" targetRef="sweepUpPayment"/>
+    <sequenceFlow id="flow5" sourceRef="sweepUpPayment" targetRef="sweepUpPaymentConfirmation"/>
+    <sequenceFlow id="flow6" sourceRef="sweepUpPaymentConfirmation" targetRef="SweepDown"/>
+    <sequenceFlow id="flow7" sourceRef="SweepDown" targetRef="sweepDownPayment"/>
+    <sequenceFlow id="flow8" sourceRef="sweepDownPayment" targetRef="SweepDownPaymentConfirmation"/>
+    <sequenceFlow id="flow9" sourceRef="SweepDownPaymentConfirmation" targetRef="SweepStatusUpdate"/>
+    <sequenceFlow id="flow10" sourceRef="SweepStatusUpdate" targetRef="SweepPostProcessing"/>
+    <sequenceFlow id="flow11" sourceRef="SweepPostProcessing" targetRef="groupCompleted"/>
+  </process>
+  <bpmndi:BPMNDiagram id="Yaoqiang_Diagram-IntraDayGroups" name="Untitled Diagram" resolution="96.0">
+    <bpmndi:BPMNPlane bpmnElement="IntraDayGroups">
+      <bpmndi:BPMNShape bpmnElement="startOn" id="Yaoqiang-startOn">
+        <omgdc:Bounds height="32.0" width="32.0" x="32.0" y="113.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="47.0" x="24.5" y="153.44"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="CheckDependency" id="Yaoqiang-CheckDependency">
+        <omgdc:Bounds height="101.0" width="141.0" x="180.0" y="80.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="105.0" x="198.0" y="123.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="BalanceFetch" id="Yaoqiang-BalanceFetch">
+        <omgdc:Bounds height="101.0" width="141.0" x="390.0" y="80.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="75.0" x="423.0" y="123.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="SweepUp" id="Yaoqiang-SweepUp">
+        <omgdc:Bounds height="101.0" width="141.0" x="610.0" y="80.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="54.0" x="653.5" y="123.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sweepUpPayment" id="Yaoqiang-sweepUpPayment">
+        <omgdc:Bounds height="101.0" width="141.0" x="800.0" y="80.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="99.0" x="821.0" y="123.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sweepUpPaymentConfirmation" id="Yaoqiang-sweepUpPaymentConfirmation">
+        <omgdc:Bounds height="91.0" width="161.0" x="970.0" y="85.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="32.96" width="143.0" x="979.0" y="116.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="SweepDown" id="Yaoqiang-SweepDown">
+        <omgdc:Bounds height="101.0" width="141.0" x="980.0" y="250.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="69.0" x="1016.0" y="293.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sweepDownPayment" id="Yaoqiang-sweepDownPayment">
+        <omgdc:Bounds height="101.0" width="141.0" x="800.0" y="250.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="114.0" x="813.5" y="293.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="SweepDownPaymentConfirmation" id="Yaoqiang-SweepDownPaymentConfirmation">
+        <omgdc:Bounds height="101.0" width="153.0" x="604.0" y="250.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="32.96" width="136.0" x="612.5" y="286.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="SweepStatusUpdate" id="Yaoqiang-SweepStatusUpdate">
+        <omgdc:Bounds height="101.0" width="141.0" x="390.0" y="250.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="110.0" x="405.5" y="293.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="SweepPostProcessing" id="Yaoqiang-SweepPostProcessing">
+        <omgdc:Bounds height="101.0" width="141.0" x="180.0" y="250.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="121.0" x="190.0" y="293.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="groupCompleted" id="Yaoqiang-groupCompleted">
+        <omgdc:Bounds height="32.0" width="32.0" x="32.0" y="283.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="97.0" x="-0.5" y="323.52"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow11" id="Yaoqiang-flow11">
+        <omgdi:waypoint x="180.0" y="300.5"/>
+        <omgdi:waypoint x="64.0" y="299.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="119.0" y="290.27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow10" id="Yaoqiang-flow10">
+        <omgdi:waypoint x="390.0" y="300.5"/>
+        <omgdi:waypoint x="321.0" y="300.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="352.5" y="291.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow9" id="Yaoqiang-flow9">
+        <omgdi:waypoint x="604.0" y="300.5"/>
+        <omgdi:waypoint x="531.0" y="300.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="564.5" y="291.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow8" id="Yaoqiang-flow8">
+        <omgdi:waypoint x="800.0" y="300.5"/>
+        <omgdi:waypoint x="757.0" y="300.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="775.5" y="291.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow7" id="Yaoqiang-flow7">
+        <omgdi:waypoint x="980.0" y="300.5"/>
+        <omgdi:waypoint x="941.0" y="300.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="957.5" y="291.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow6" id="Yaoqiang-flow6">
+        <omgdi:waypoint x="1050.5" y="176.0"/>
+        <omgdi:waypoint x="1050.5" y="250.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="1047.5" y="203.52"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow5" id="Yaoqiang-flow5">
+        <omgdi:waypoint x="941.0" y="130.5"/>
+        <omgdi:waypoint x="970.0" y="130.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="952.5" y="121.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="Yaoqiang-flow4">
+        <omgdi:waypoint x="751.0" y="130.5"/>
+        <omgdi:waypoint x="800.0" y="130.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="772.5" y="121.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow3" id="Yaoqiang-flow3">
+        <omgdi:waypoint x="531.0" y="130.5"/>
+        <omgdi:waypoint x="610.0" y="130.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="567.5" y="121.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="Yaoqiang-flow2">
+        <omgdi:waypoint x="321.0" y="130.5"/>
+        <omgdi:waypoint x="390.0" y="130.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="352.5" y="121.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="Yaoqiang-flow1">
+        <omgdi:waypoint x="64.0" y="129.0"/>
+        <omgdi:waypoint x="180.0" y="130.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="119.0" y="120.27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
